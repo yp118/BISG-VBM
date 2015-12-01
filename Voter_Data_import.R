@@ -21,7 +21,7 @@ for (i in 2:32) {
 VoterInfo.2014 <- read.csv("Master_Voting_History_List_Voter_Details_ Part1_11_26_2014_11_31_00.txt")
 
 # Looping through text documents and reading into R
-for (i in 2:32) {
+for (i in 2:29) {
   # Create file name
   sheetname <- paste("Master_Voting_History_List_Voter_Details_ Part",i,"_11_26_2014_11_31_00.txt", sep = "")
   # Load file in as dataframe
@@ -49,11 +49,32 @@ Info.IDs <- Info.2014 %>%
 Votes.IDs
 Info.IDs
 
+# Calculating total number of unmatched Voter Ids
 a <- setdiff(Votes.IDs, Info.IDs)
 b <- setdiff(Info.IDs, Votes.IDs)
 c <- bind_rows(a,b)
-distinct(c)
+count(distinct(c))
 
-# Performing Inner Join to see where Voter Id's don't match 
-anti_join(Votes.IDs, Info.IDs, by = "VOTER_ID")
 
+# Creating tables for umatched votes
+unmatched_Info <- filter(Info.2014, VOTER_ID %in% b$VOTER_ID)
+unmatched_Votes <- filter(Votes.2014, VOTER_ID %in% a$VOTER_ID)
+
+
+# Checking which counties unmatched votes are coming from. 
+unmatched_Info %>%
+  select(COUNTY) %>%
+  distinct()
+unmatched_Votes %>%
+  select(COUNTY_NAME) %>%
+  distinct()
+
+unmatched_Votes
+unmatched_Info
+
+
+intersect(Votes.IDs, Info.OldIDs)
+
+setdiff(Info.OldIDs, Votes.IDs)
+c <- bind_rows(a,b)
+count(distinct(c))
