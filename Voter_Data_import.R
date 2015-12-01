@@ -1,4 +1,4 @@
-# Loading necessart libraries
+# Loading necessary libraries
 library(dplyr)
 
 # Setting working directory
@@ -29,6 +29,7 @@ for (i in 2:32) {
   # Attach rows from file to master voter information dataframe
   VoterInfo.2014 <- rbind(VoterInfo.2014, sheet)
 }
+rm(sheetname, i, sheet)
 
 # Converting to dplyr tbls
 Votes.2014 <- tbl_df(VoteHistory.2014)
@@ -45,5 +46,8 @@ Info.IDs <- Info.2014 %>%
   arrange(VOTER_ID) %>%
   distinct()
 
-inner_join(Votes.2014, Info.2014, by = "VOTER_ID")
+setdiff(Votes.IDs, Info.IDs)
+
+# Performing Inner Join to see where Voter Id's don't match 
+anti_join(Votes.IDs, Info.IDs, by = "VOTER_ID")
 
