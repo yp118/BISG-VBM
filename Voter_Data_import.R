@@ -46,7 +46,13 @@ Info.IDs <- Info.2014 %>%
   arrange(VOTER_ID) %>%
   distinct()
 
-setdiff(Votes.IDs, Info.IDs)
+Votes.IDs
+Info.IDs
+
+a <- setdiff(Votes.IDs, Info.IDs)
+b <- setdiff(Info.IDs, Votes.IDs)
+c <- bind_rows(a,b)
+distinct(c)
 
 # Performing Inner Join to see where Voter Id's don't match 
 anti_join(Votes.IDs, Info.IDs, by = "VOTER_ID")
