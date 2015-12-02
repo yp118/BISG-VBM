@@ -1,6 +1,6 @@
 # Loading necessary libraries
 library(dplyr)
-
+library(lubridate)
 # Setting working directory
 setwd("C:/Users/Yogi/Desktop/2014 Data Extracted")
 
@@ -47,6 +47,9 @@ for (i in 1:26) {
 
 rm(i)
 
+Votes.2014 <- tbl_df(Votes.2014)
+Info.2014 <- tbl_df(Info.2014)
+
 # Getting list of unique vote ID's from both datasets
 Votes.IDs <- Votes.2014 %>%
   select(VOTER_ID) %>%
@@ -62,8 +65,8 @@ Votes.IDs
 Info.IDs
 
 # Calculating total number of unmatched Voter Ids
-a <- setdiff(Votes.IDs, Info.IDs)
-b <- setdiff(Info.IDs, Votes.IDs)
+a <- Votes.IDs %>% setdiff(Info.IDs) %>% arrange(VOTER_ID) %>% distinct()
+b <- Info.IDs %>% setdiff(Votes.IDs) %>% arrange(VOTER_ID) %>% distinct()
 c <- bind_rows(a,b)
 count(distinct(c))
 
@@ -90,3 +93,14 @@ intersect(Votes.IDs, Info.OldIDs)
 setdiff(Info.OldIDs, Votes.IDs)
 c <- bind_rows(a,b)
 count(distinct(c))
+
+
+
+# Getting list of unique vote ID's from both datasets
+Votes.years <- Votes.2014 %>%
+  select(ELECTION_DATE) %>%
+  arrange(ELECTION_DATE) %>%
+  distinct()
+
+Votes.2014$ELECTION_DATE <- as.Date(Votes.2014$ELECTION_DATE)
+Votes.2014$year <- year(Votes.2014$ELECTION_DATE)
