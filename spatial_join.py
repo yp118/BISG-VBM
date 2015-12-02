@@ -7,7 +7,7 @@ dafc = "Feature Class Name"
 dafld = "RegionAbbr"
 bgfc = r""
 bgfld = "STATEFP"
-out_fc = "Feature Class _ Joined"
+out_fc = dafc+"_Joined"
 
 stateDict = {
     "AL" : "01",

@@ -1,6 +1,7 @@
 # Loading necessary libraries
 library(dplyr)
 library(lubridate)
+options(stringsAsFactors=F)
 # Setting working directory
 setwd("C:/Users/Yogi/Desktop/2014 Data Extracted")
 

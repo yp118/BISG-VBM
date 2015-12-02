@@ -40,7 +40,7 @@ GeoCode <- function(address,verbose=FALSE) {
 
  = c(data$inName)
 
-results = data.frame(data, namefound = "NA", status="NA",level="NA",lat=NA,lon=NA, problem=factor("N", levels=c("Y","N")), stringsAsFactors=F)    # holder for data
+results = data.frame(data, namefound = "NA", status="NA",level="NA",lat=NA,lon=NA, problem=factor("N", levels=c("Y","N")), stringsAsFactors=F)
 for (i in 1:length(loc_in)){
   loc_in[i] <- gsub("#", "", loc_in[i])
   result = as.data.frame(googGeoCode(loc_in[i]))
