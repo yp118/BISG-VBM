@@ -14,7 +14,12 @@ for (i in 2:32) {
     paste("Master_Voting_History_List_ Part",i,"_11_26_2014_11_32_00.txt", sep = "") %>%
     read.csv() %>% 
     rbind(Votes.2014)
+  #rbind fill
 }
+
+# Do parrallel, foreach
+# data tables format
+
 
 # Load and add 2012 data not included in 2014 CD
 root <- "C:/Users/Yogi/Desktop/2012 Data Extracted/"
@@ -105,3 +110,6 @@ Votes.years <- Votes.2014 %>%
 
 Votes.2014$ELECTION_DATE <- as.Date(Votes.2014$ELECTION_DATE)
 Votes.2014$year <- year(Votes.2014$ELECTION_DATE)
+
+
+
