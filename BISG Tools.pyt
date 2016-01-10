@@ -8,7 +8,7 @@ class Toolbox(object):
         self.alias = "BISG_Tools"
 
         # List of tool classes associated with this toolbox
-        self.tools = [Address_Cleaner]
+        self.tools = [Address_Cleaner, Spatial_Join]
 
 class Address_Cleaner(object):
     def __init__(self):
@@ -524,4 +524,170 @@ class Address_Cleaner(object):
         arcpy.DeleteField_management(out_flagged, "WORKS")
 
 
+        return
+
+class Spatial_Join(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = "Spatial_Join"
+        self.description = ""
+        self.canRunInBackground = False
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        workspace = arcpy.Parameter(
+            displayName = "Geodatabase",
+            name = "gdb",
+            datatype = "DEWorkspace",
+            parameterType = "Required",
+            direction = "Input")
+        
+        param1 = arcpy.Parameter(
+            displayName = "Input Feature",
+            name = "in_feature",
+            datatype = "GPFeatureLayer",
+            parameterType = "Required",
+            direction = "Input"
+            )
+
+        workspace.defaultEnvironmentName = "workspace"
+
+        param2 = arcpy.Parameter(
+            displayName = "State Field",
+            name = "state_field",
+            datatype = "Field",
+            parameterType = "Required",
+            direction = "Input"
+            )
+
+        param2.parameterDependencies = [param1.name]
+        param2.filter.list = ["Text"]
+
+        param3 = arcpy.Parameter(
+            displayName = "Census Block Group Features",
+            name = "census_feature",
+            datatype = "GPFeatureLayer",
+            parameterType = "Required",
+            direction = "Input"
+            )
+
+        param4 = arcpy.Parameter(
+            displayName = "FIPS Field",
+            name = "fips_field",
+            datatype = "Field",
+            parameterType = "Required",
+            direction = "Input"
+            )
+        param4.parameterDependencies = [param3.name]
+
+        param5 = arcpy.Parameter(
+            displayName = "Output Feature Class",
+            name = "out_fc",
+            datatype = "DEFeatureClass",
+            parameterType = "Required",
+            direction = "Output"
+            )
+        
+        params = [workspace, param1, param2, param3, param4, param5]
+
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        return
+
+    def updateMessages(self, parameters):
+        return
+
+    def execute(self, parameters, messages):
+        import arcpy
+        import os
+
+        arcpy.env.workspace = parameters[0].valueAsText
+
+        dafc = parameters[1].valueAsText
+        dafld = parameters[2].valueAsText
+        bgfc = parameters[3].valueAsText
+        bgfld = parameters[4].valueAsText
+        out_fc = parameters[5].valueAsText
+
+        stateDict = {
+            "AL" : "01",
+            "AK" : "02",
+            "AZ" : "04",
+            "AR" : "05",
+            "CA" : "06",
+            "CO" : "08",
+            "CT" : "09",
+            "DE" : "10",
+            "DC" : "11",
+            "FL" : "12",
+            "GA" : "13",
+            "HI" : "15",
+            "ID" : "16",
+            "IL" : "17",
+            "IN" : "18",
+            "IA" : "19",
+            "KS" : "20",
+            "KY" : "21",
+            "LA" : "22",
+            "ME" : "23",
+            "MD" : "24",
+            "MA" : "25",
+            "MI" : "26",
+            "MN" : "27",
+            "MS" : "28",
+            "MO" : "29",
+            "MT" : "30",
+            "NE" : "31",
+            "NV" : "32",
+            "NH" : "33",
+            "NJ" : "34",
+            "NM" : "35",
+            "NY" : "36",
+            "NC" : "37",
+            "ND" : "38",
+            "OH" : "39",
+            "OK" : "40",
+            "OR" : "41",
+            "PA" : "42",
+            "RI" : "44",
+            "SC" : "45",
+            "SD" : "46",
+            "TN" : "47",
+            "TX" : "48",
+            "UT" : "49",
+            "VT" : "50",
+            "VA" : "51",
+            "WA" : "53",
+            "WV" : "54",
+            "WI" : "55",
+            "WY" : "56",
+            "PR" : "72" }
+
+        daStates = set([row[0] for row in arcpy.da.SearchCursor(dafc, (dafld))])
+        arcpy.AddMessage("Number of states found: " + str(len(daStates)))
+        
+        tmp_tbls=[]
+
+        for k,i in enumerate(daStates):
+            arcpy.AddMessage("Joining features in: " + i)
+            if i in stateDict:
+                fips = stateDict[i]
+                arcpy.MakeFeatureLayer_management(dafc, "data_"+i, '"'+dafld+'" = \''+i+'\'') 
+                arcpy.MakeFeatureLayer_management(bgfc, "bg_"+i, '"'+bgfld+'" = \''+fips+'\'')
+
+                arcpy.SpatialJoin_analysis("data_"+i, "bg_"+i, 'temps_'+i, 'JOIN_ONE_TO_ONE', 'KEEP_ALL','','WITHIN')
+
+                tmp_tbls.append('temps_'+i)
+
+        # Merging temp tables together
+        arcpy.AddMessage("Merging Features")
+        arcpy.Merge_management(tmp_tbls,out_fc)
+
+        for i in tmp_tbls:
+            arcpy.Delete_management(i)
         return
